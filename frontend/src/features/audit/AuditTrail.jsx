@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { AlertCircle, History, Search } from 'lucide-react'
 import { apiRequest } from '../../shared/api/api.js'
 import './AuditTrail.css'
@@ -41,7 +41,7 @@ function AuditTrail() {
       <form className="audit-search" onSubmit={handleSearch}>
         <label>Aggregate type
           <select value={aggregateType} onChange={(event) => setAggregateType(event.target.value)}>
-            <option value="APPLICATION">Application</option><option value="REQUISITION">Requisition</option>
+            <option value="APPLICATION">Application</option><option value="JOB_REQUISITION">Requisition</option>
             <option value="CANDIDATE">Candidate</option><option value="INTERVIEW">Interview</option>
             <option value="OFFER">Offer</option><option value="SKILL">Skill</option>
             <option value="SCREENING_RULE">Screening rule</option><option value="RESUME_ARTIFACT">Resume metadata</option>
@@ -52,13 +52,13 @@ function AuditTrail() {
           <input value={aggregateId} onChange={(event) => setAggregateId(event.target.value)}
             placeholder="Enter the record ID" maxLength={100} required />
         </label>
-        <button className="button-primary" type="submit" disabled={loading}><Search size={16} />{loading ? 'Searching…' : 'View history'}</button>
+        <button className="button-primary" type="submit" disabled={loading}><Search size={16} />{loading ? 'SearchingΓÇª' : 'View history'}</button>
       </form>
       {error && <div className="audit-error" role="alert"><AlertCircle size={17} />{error}</div>}
       <div className="audit-results">
         <div className="audit-results-heading"><div><h2>Event history</h2><p>Events are stored as append-only records.</p></div><span>{events.length} events</span></div>
         {!searched ? <div className="audit-empty">Enter a record ID above to inspect its audit history.</div>
-          : loading ? <div className="audit-empty" role="status">Loading audit events…</div>
+          : loading ? <div className="audit-empty" role="status">Loading audit eventsΓÇª</div>
             : events.length === 0 ? <div className="audit-empty">No audit events found for this record.</div>
               : <div className="audit-event-list">{events.map((item) => (
                 <article className="audit-event" key={item.id}>
@@ -76,3 +76,4 @@ function AuditTrail() {
 }
 
 export default AuditTrail
+

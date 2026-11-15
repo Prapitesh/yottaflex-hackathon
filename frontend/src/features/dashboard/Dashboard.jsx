@@ -22,20 +22,16 @@ export default function Dashboard() {
     let active = true
     async function load() {
       try {
-        const [apps, people, roles, offerRows] = await Promise.all([
+        const [apps, people, roles, offerRows, interviewRows] = await Promise.all([
           apiRequest('/applications'), apiRequest('/candidates'),
-          apiRequest('/requisitions'), apiRequest('/offers'),
+          apiRequest('/requisitions'), apiRequest('/offers'), apiRequest('/interviews'),
         ])
-        const recent = [...apps].sort((a, b) => new Date(b.appliedAt) - new Date(a.appliedAt))
-        const interviewGroups = await Promise.all(recent.slice(0, 8).map((app) =>
-          apiRequest(`/interviews/by-application/${encodeURIComponent(app.id)}`).catch(() => [])
-        ))
         if (!active) return
         setApplications(apps)
         setCandidates(people)
         setRequisitions(roles)
         setOffers(offerRows)
-        setInterviews(interviewGroups.flat().filter((item) => item.status === 'SCHEDULED').sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)))
+        setInterviews(interviewRows.filter((item) => item.status === 'SCHEDULED').sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)))
         setError('')
       } catch (err) {
         if (active) setError(err.message || 'Unable to load dashboard data. Check the backend connection.')
@@ -106,3 +102,5 @@ export default function Dashboard() {
     <footer className="page-footer"><span>RecruitOS · Recruitment operations workspace</span><span>{loading ? 'Connecting…' : error ? 'Showing no stale demo values' : 'Metrics sourced from backend records'}</span></footer>
   </div>
 }
+
+
