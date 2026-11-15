@@ -1,0 +1,52 @@
+[
+  {
+    "issue_type": "DUPLICATE_APPLICATION",
+    "entity_type": "APPLICATION",
+    "entity_id": "APP-REQ-2026-000001-CAND-000001-0003",
+    "ground_truth_label": "DUPLICATE_APPLICATION",
+    "expected_decision": "FLAG_DUPLICATE",
+    "details": "{\"matching_application_id\": \"APP-REQ-2026-000001-CAND-000001-0002\"}",
+    "detected_at": "2026-11-15T12:00:00+00:00",
+    "resolved_at": ""
+  },
+  {
+    "issue_type": "INTERVIEWER_SCHEDULE_CONFLICT",
+    "entity_type": "INTERVIEW",
+    "entity_id": "INT-2026-000002",
+    "ground_truth_label": "INTERVIEWER_SCHEDULE_CONFLICT",
+    "expected_decision": "BLOCK_SCHEDULE",
+    "details": "{\"conflicting_interview_id\": \"INT-2026-000001\"}",
+    "detected_at": "2026-11-15T12:00:00+00:00",
+    "resolved_at": ""
+  },
+  {
+    "issue_type": "MISSING_FEEDBACK_STAGE_ADVANCED",
+    "entity_type": "INTERVIEW",
+    "entity_id": "INT-2026-000001",
+    "ground_truth_label": "MISSING_FEEDBACK_STAGE_ADVANCED",
+    "expected_decision": "BLOCK_SELECTION",
+    "details": "{\"missing_panelist_feedback\": true}",
+    "detected_at": "2026-11-15T12:00:00+00:00",
+    "resolved_at": ""
+  },
+  {
+    "issue_type": "OFFER_OUTSIDE_APPROVED_BAND",
+    "entity_type": "OFFER",
+    "entity_id": "OFF-2026-000001",
+    "ground_truth_label": "OFFER_OUTSIDE_APPROVED_BAND",
+    "expected_decision": "BLOCK_APPROVAL",
+    "details": "{\"salary\": 1275000, \"salary_max\": 1125000}",
+    "detected_at": "2026-11-15T12:00:00+00:00",
+    "resolved_at": ""
+  },
+  {
+    "issue_type": "CLOSED_REQUISITION_ACTIVE_APPLICATION",
+    "entity_type": "APPLICATION",
+    "entity_id": "APP-REQ-2026-000001-CAND-000002-0001",
+    "ground_truth_label": "CLOSED_REQUISITION_ACTIVE_APPLICATION",
+    "expected_decision": "FLAG_ACTIVE_ON_CLOSED_ROLE",
+    "details": "{\"requisition_id\": \"REQ-2026-000001\"}",
+    "detected_at": "2026-11-15T12:00:00+00:00",
+    "resolved_at": ""
+  }
+]

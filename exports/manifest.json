@@ -1,0 +1,76 @@
+{
+  "seed": 20261022,
+  "profile": "full",
+  "generated_at": "fixed-by-design",
+  "tables": {
+    "department": {
+      "rows": 10,
+      "csv_sha256": "f490a643fc2cc64c0f872ff75a674bc6797003d4e57672934d75cf56c59ac1b9"
+    },
+    "job_requisition": {
+      "rows": 100,
+      "csv_sha256": "ca79111ba531fa649f45ce8563cfc4bfc0450db81b8048d40868febf12d489a6"
+    },
+    "candidate": {
+      "rows": 2000,
+      "csv_sha256": "89e03f123d67a555d9d5653eec9db05ba80ca0b1f0ef51a94e5e39adc2015db5"
+    },
+    "skill": {
+      "rows": 20,
+      "csv_sha256": "ca77d95c9e069649ec8bc313938bc02a4aacb78e66e5f6728fc8a289d5d406c5"
+    },
+    "candidate_skill": {
+      "rows": 10822,
+      "csv_sha256": "26f0411b506317f74699ead7b1680e130e204eeebf7130f9285f30db41ba73ad"
+    },
+    "screening_rule": {
+      "rows": 300,
+      "csv_sha256": "d7773a892abfa902a8d423dcd5490492ea0046156a44d7bf5eb5b2a3dcda9fd9"
+    },
+    "resume_artifact": {
+      "rows": 3000,
+      "csv_sha256": "3660ad7dff9502b2f0796d4ff5ff7617daab6834b101d6d6d8d8beddc7e6dfc3"
+    },
+    "application": {
+      "rows": 3000,
+      "csv_sha256": "29df62f8aa8cf9ad0f396a488bd7e3e26a90a9c8a44d45ae9071f4f859f5e403"
+    },
+    "interviewer": {
+      "rows": 60,
+      "csv_sha256": "2048b49f6f90e81d11aff703dd1f7af594d37c68f00197cbb4baaad563781b6b"
+    },
+    "interview": {
+      "rows": 600,
+      "csv_sha256": "146b436f878ef806a8b71ed035d9e37bb5c4a67b37e8a153ad502edb38bafaf9"
+    },
+    "interview_interviewer": {
+      "rows": 1200,
+      "csv_sha256": "4fadf4238fc2732dca9246fbcc59395c635d5a8221d088b6d49a65169695d293"
+    },
+    "feedback": {
+      "rows": 901,
+      "csv_sha256": "c998d8946da279bffeb28dc3f8b8bf6b05db9a6f7d6aac9c85e6702c8bc00538"
+    },
+    "offer": {
+      "rows": 150,
+      "csv_sha256": "3a18433db05a5a3d98adc08a277d6247b8ec2ec97494d2d1a26c6ea3aee4ebee"
+    },
+    "application_stage_history": {
+      "rows": 3000,
+      "csv_sha256": "e8cf630857fc34b140df4de5638e0371120c3e368703c5d57a87a9192a78b10b"
+    },
+    "audit_event": {
+      "rows": 3000,
+      "csv_sha256": "46b200af609ccabf0076be975d576ba648da654b89176f1e1a23a9f330d5d8fb"
+    },
+    "data_issue": {
+      "rows": 5,
+      "csv_sha256": "b99c9ac39b9cdf2bf6f0ead30b27aad86f7efca3b688e8d7421d49cfacd7c46d"
+    }
+  },
+  "validation": {
+    "foreign_keys": "passed",
+    "application_primary_keys": "unique",
+    "ground_truth_cases": 5
+  }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "skill_id": "SKILL-001",
+    "name": "Java",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-002",
+    "name": "Spring Boot",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-003",
+    "name": "SQL",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-004",
+    "name": "PostgreSQL",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-005",
+    "name": "React",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-006",
+    "name": "JavaScript",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-007",
+    "name": "Python",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-008",
+    "name": "Docker",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-009",
+    "name": "AWS",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-010",
+    "name": "REST APIs",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-011",
+    "name": "Hibernate",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-012",
+    "name": "Microservices",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-013",
+    "name": "Kafka",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-014",
+    "name": "Redis",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-015",
+    "name": "Git",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-016",
+    "name": "Linux",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-017",
+    "name": "JUnit",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-018",
+    "name": "TypeScript",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-019",
+    "name": "LLM",
+    "category": "TECHNICAL"
+  },
+  {
+    "skill_id": "SKILL-020",
+    "name": "RAG",
+    "category": "TECHNICAL"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "department_id": "DEP-001",
+    "name": "Engineering",
+    "cost_center": "CC-001",
+    "created_at": "2026-05-18T18:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-002",
+    "name": "Product",
+    "cost_center": "CC-002",
+    "created_at": "2026-06-24T07:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-003",
+    "name": "Data & Analytics",
+    "cost_center": "CC-003",
+    "created_at": "2026-10-22T05:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-004",
+    "name": "Platform",
+    "cost_center": "CC-004",
+    "created_at": "2026-07-21T05:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-005",
+    "name": "Security",
+    "cost_center": "CC-005",
+    "created_at": "2026-11-13T14:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-006",
+    "name": "Operations",
+    "cost_center": "CC-006",
+    "created_at": "2026-02-09T08:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-007",
+    "name": "Finance",
+    "cost_center": "CC-007",
+    "created_at": "2026-10-16T06:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-008",
+    "name": "People",
+    "cost_center": "CC-008",
+    "created_at": "2026-08-08T03:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-009",
+    "name": "Design",
+    "cost_center": "CC-009",
+    "created_at": "2026-09-21T13:00:00+00:00"
+  },
+  {
+    "department_id": "DEP-010",
+    "name": "Customer Success",
+    "cost_center": "CC-010",
+    "created_at": "2026-08-08T08:00:00+00:00"
+  }
+]

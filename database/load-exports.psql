@@ -1,0 +1,26 @@
+-- Load deterministic CSV exports into an EMPTY database after schema.sql.
+-- Run from the repository root:
+-- psql -v ON_ERROR_STOP=1 -U postgres -d yottaflex-hackathon -f database/load-exports.psql
+-- This script intentionally does not truncate or overwrite existing records.
+
+BEGIN;
+SET CONSTRAINTS ALL DEFERRED;
+
+\copy department (department_id,name,cost_center,created_at) FROM 'exports/csv/department.csv' WITH (FORMAT csv, HEADER true);
+\copy job_requisition (requisition_id,department_id,title,description,employment_type,location,openings,salary_min,salary_max,currency,status,requested_by,approved_by,approved_at,opened_at,closed_at,created_at,updated_at) FROM 'exports/csv/job_requisition.csv' WITH (FORMAT csv, HEADER true);
+\copy candidate (candidate_id,full_name,email,phone,current_location,total_experience_months,created_at) FROM 'exports/csv/candidate.csv' WITH (FORMAT csv, HEADER true);
+\copy skill (skill_id,name,category) FROM 'exports/csv/skill.csv' WITH (FORMAT csv, HEADER true);
+\copy candidate_skill (candidate_id,skill_id,proficiency,years_experience,evidence_source,verified) FROM 'exports/csv/candidate_skill.csv' WITH (FORMAT csv, HEADER true);
+\copy screening_rule (rule_id,requisition_id,skill_id,rule_type,weight,threshold,is_mandatory,effective_from,effective_to) FROM 'exports/csv/screening_rule.csv' WITH (FORMAT csv, HEADER true);
+\copy interviewer (interviewer_id,full_name,email,department_id,active,timezone) FROM 'exports/csv/interviewer.csv' WITH (FORMAT csv, HEADER true);
+\copy resume_artifact (resume_id,candidate_id,application_id,file_name,storage_uri,mime_type,checksum_sha256,parsed_at,uploaded_at) FROM 'exports/csv/resume_artifact.csv' WITH (FORMAT csv, HEADER true);
+\copy application (application_id,requisition_id,candidate_id,resume_id,stage,screening_score,screening_decision,applied_at,last_stage_changed_at) FROM 'exports/csv/application.csv' WITH (FORMAT csv, HEADER true);
+\copy interview (interview_id,application_id,interview_type,scheduled_start,scheduled_end,mode,meeting_location,status,created_at) FROM 'exports/csv/interview.csv' WITH (FORMAT csv, HEADER true);
+\copy interview_interviewer (interview_id,interviewer_id,role) FROM 'exports/csv/interview_interviewer.csv' WITH (FORMAT csv, HEADER true);
+\copy feedback (feedback_id,interview_id,interviewer_id,score,recommendation,strengths,concerns,submitted_at) FROM 'exports/csv/feedback.csv' WITH (FORMAT csv, HEADER true);
+\copy offer (offer_id,application_id,salary,currency,status,approved_by,approved_at,issued_at,responded_at,valid_until,created_at) FROM 'exports/csv/offer.csv' WITH (FORMAT csv, HEADER true);
+\copy application_stage_history (application_id,from_stage,to_stage,changed_by,reason,changed_at) FROM 'exports/csv/application_stage_history.csv' WITH (FORMAT csv, HEADER true);
+\copy audit_event (aggregate_type,aggregate_id,event_type,actor,event_payload,occurred_at) FROM 'exports/csv/audit_event.csv' WITH (FORMAT csv, HEADER true);
+\copy data_issue (issue_type,entity_type,entity_id,ground_truth_label,expected_decision,details,detected_at,resolved_at) FROM 'exports/csv/data_issue.csv' WITH (FORMAT csv, HEADER true);
+
+COMMIT;
