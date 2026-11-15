@@ -2,10 +2,10 @@
   {
     "issue_type": "DUPLICATE_APPLICATION",
     "entity_type": "APPLICATION",
-    "entity_id": "APP-REQ-2026-000001-CAND-000001-0003",
+    "entity_id": "APP-REQ-2026-000001-CAND-000001-DUP-0003",
     "ground_truth_label": "DUPLICATE_APPLICATION",
     "expected_decision": "FLAG_DUPLICATE",
-    "details": "{\"matching_application_id\": \"APP-REQ-2026-000001-CAND-000001-0002\"}",
+    "details": "{\"matching_application_id\": \"APP-REQ-2026-000001-CAND-000001\"}",
     "detected_at": "2026-11-15T12:00:00+00:00",
     "resolved_at": ""
   },
@@ -35,14 +35,14 @@
     "entity_id": "OFF-2026-000001",
     "ground_truth_label": "OFFER_OUTSIDE_APPROVED_BAND",
     "expected_decision": "BLOCK_APPROVAL",
-    "details": "{\"salary\": 1275000, \"salary_max\": 1125000}",
+    "details": "{\"salary\": 1600000, \"salary_max\": 1125000}",
     "detected_at": "2026-11-15T12:00:00+00:00",
     "resolved_at": ""
   },
   {
     "issue_type": "CLOSED_REQUISITION_ACTIVE_APPLICATION",
     "entity_type": "APPLICATION",
-    "entity_id": "APP-REQ-2026-000001-CAND-000002-0001",
+    "entity_id": "APP-REQ-2026-000001-CAND-000002",
     "ground_truth_label": "CLOSED_REQUISITION_ACTIVE_APPLICATION",
     "expected_decision": "FLAG_ACTIVE_ON_CLOSED_ROLE",
     "details": "{\"requisition_id\": \"REQ-2026-000001\"}",

@@ -29,19 +29,19 @@
     },
     "resume_artifact": {
       "rows": 3000,
-      "csv_sha256": "3660ad7dff9502b2f0796d4ff5ff7617daab6834b101d6d6d8d8beddc7e6dfc3"
+      "csv_sha256": "c5903c307fad21fc5b6e3005c8d804c40cbb816a631e0ccce6e6ad80e2e33f2f"
     },
     "application": {
       "rows": 3000,
-      "csv_sha256": "29df62f8aa8cf9ad0f396a488bd7e3e26a90a9c8a44d45ae9071f4f859f5e403"
+      "csv_sha256": "eb7622a75ee4833f97fd2c3d59ff28d24443eb036f327177bf17761d655e57f1"
     },
     "interviewer": {
       "rows": 60,
-      "csv_sha256": "2048b49f6f90e81d11aff703dd1f7af594d37c68f00197cbb4baaad563781b6b"
+      "csv_sha256": "bb612f5501cbdff8d433517def333042865183120f8c3002e1cd9bd0a206e706"
     },
     "interview": {
       "rows": 600,
-      "csv_sha256": "146b436f878ef806a8b71ed035d9e37bb5c4a67b37e8a153ad502edb38bafaf9"
+      "csv_sha256": "82079773895beaa93265f68f32d28c12a8e47ac988e2500f047ffc2c215e890d"
     },
     "interview_interviewer": {
       "rows": 1200,
@@ -49,28 +49,31 @@
     },
     "feedback": {
       "rows": 901,
-      "csv_sha256": "c998d8946da279bffeb28dc3f8b8bf6b05db9a6f7d6aac9c85e6702c8bc00538"
+      "csv_sha256": "604b4ea905042e63f137edda130a9f065d8e80126e47f88352fb16c94056ee64"
     },
     "offer": {
       "rows": 150,
-      "csv_sha256": "3a18433db05a5a3d98adc08a277d6247b8ec2ec97494d2d1a26c6ea3aee4ebee"
+      "csv_sha256": "f97d54d4e28715b9bc6edabe8183b3c15d14dcb4405e45dea9b3440d89984cc8"
     },
     "application_stage_history": {
       "rows": 3000,
-      "csv_sha256": "e8cf630857fc34b140df4de5638e0371120c3e368703c5d57a87a9192a78b10b"
+      "csv_sha256": "82e512fb11a6b6ae45225c2ed0771c2b59feec0719a56168c748ce4b2267166e"
     },
     "audit_event": {
       "rows": 3000,
-      "csv_sha256": "46b200af609ccabf0076be975d576ba648da654b89176f1e1a23a9f330d5d8fb"
+      "csv_sha256": "0ed40c24fe4e7c08da8c42b988e4f7b3c6a9d4d9d0e2e5c8a8ca61b78954aff4"
     },
     "data_issue": {
       "rows": 5,
-      "csv_sha256": "b99c9ac39b9cdf2bf6f0ead30b27aad86f7efca3b688e8d7421d49cfacd7c46d"
+      "csv_sha256": "8695dd6154f08661f00790d230900c57194e1fabd28eaeedfe08ee7238f7e1da"
     }
   },
   "validation": {
     "foreign_keys": "passed",
     "application_primary_keys": "unique",
+    "application_timestamps": "passed",
+    "offer_lifecycle_timestamps": "passed",
+    "interview_date_order": "passed",
     "ground_truth_cases": 5
   }
 }

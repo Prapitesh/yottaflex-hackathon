@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Deterministic synthetic recruitment data generator.
 
 Usage:
@@ -113,7 +113,7 @@ def generate(seed: int, profile: str, output: Path) -> dict:
     app_pairs = set()
     for i in range(app_n):
         req = requisitions[i % len(requisitions)]
-        candidate = candidates[(i * 7) % len(candidates)]
+        candidate = candidates[(i * 7 + (i // len(requisitions)) * 13) % len(candidates)]
         if i == 0:
             candidate = candidates[1]
         if i == 1:
@@ -122,15 +122,36 @@ def generate(seed: int, profile: str, output: Path) -> dict:
         if i == 2:
             req = requisitions[0]
             candidate = candidates[0]  # Deliberate duplicate application pair.
-        stage = rng.choice(ENUMS["application_stage"])
+        # Derive screening score and decision from job-related required skills only.
+        required = {rule["skill_id"] for rule in screening_rules
+                    if rule["requisition_id"] == req["requisition_id"] and rule["is_mandatory"]}
+        candidate_skill_ids = {item["skill_id"] for item in candidate_skills
+                               if item["candidate_id"] == candidate["candidate_id"]}
+        match_ratio = len(required & candidate_skill_ids) / max(1, len(required))
+        score = round(35 + 64 * match_ratio, 2)
+        decision = "PASS" if score >= 70 else "REVIEW" if score >= 50 else "FAIL"
         if i == 0:
-            stage = "APPLIED"  # Active application on the closed requisition.
+            stage = "APPLIED"  # Labelled active application on the closed requisition.
+        elif i % 13 == 0:
+            stage = "WITHDRAWN"
+        elif decision == "FAIL":
+            stage = "REJECTED"
+        elif decision == "PASS":
+            stage = "SHORTLISTED"
+        else:
+            stage = "SCREENING"
+        # Exact mandated ID for normal applications; duplicate pair receives a
+        # clearly marked suffix so both rows retain unique immutable primary keys.
+        base_id = f"APP-{req['requisition_id']}-{candidate['candidate_id']}"
+        application_id = base_id if (req["requisition_id"], candidate["candidate_id"]) not in app_pairs else f"{base_id}-DUP-{i+1:04d}"
+        applied_at = NOW - timedelta(days=rng.randint(1, 180), hours=rng.randint(0, 23))
+        changed_at = applied_at + timedelta(hours=rng.randint(0, 72))
         applications.append({
-            "application_id": f"APP-{req['requisition_id']}-{candidate['candidate_id']}-{i+1:04d}",
+            "application_id": application_id,
             "requisition_id": req["requisition_id"], "candidate_id": candidate["candidate_id"],
             "resume_id": f"RES-{i+1:06d}", "stage": stage,
-            "screening_score": round(rng.uniform(35, 99), 2), "screening_decision": rng.choice(["PASS", "FAIL", "REVIEW"]),
-            "applied_at": stamp(rng, 180), "last_stage_changed_at": stamp(rng, 90)
+            "screening_score": score, "screening_decision": decision,
+            "applied_at": iso(applied_at), "last_stage_changed_at": iso(changed_at)
         })
         app_pairs.add((req["requisition_id"], candidate["candidate_id"]))
     resumes = [{
@@ -152,8 +173,9 @@ def generate(seed: int, profile: str, output: Path) -> dict:
         end = start + timedelta(minutes=60)
         status = "COMPLETED" if i % 4 else "SCHEDULED"
         if i == 0:
-            status = "COMPLETED"  # Feedback anomaly is kept separate in ground truth.
+            status = "COMPLETED"  # Labelled missing-feedback/stage-advanced anomaly.
             app["stage"] = "SELECTED"
+            app["last_stage_changed_at"] = iso(end + timedelta(hours=4))
         iid = f"INT-2026-{i+1:06d}"
         interviews.append({
             "interview_id": iid, "application_id": app["application_id"], "interview_type": rng.choice(ENUMS["interview_type"]),
@@ -189,14 +211,21 @@ def generate(seed: int, profile: str, output: Path) -> dict:
         salary = round(rng.uniform(req["salary_min"], req["salary_max"]), 2)
         if i == 0:
             salary = req["salary_max"] + 150000  # Deliberate out-of-band offer.
+        # Offers are generated only for selected applications; lifecycle timestamps
+        # are monotonic and derived from creation, approval, issue and response.
+        app["stage"] = "SELECTED"
+        created_at = NOW - timedelta(days=rng.randint(20, 60))
         status = ["PENDING_APPROVAL", "ISSUED", "ACCEPTED", "REJECTED", "DRAFT"][i % 5]
         approved = status in ("ISSUED", "ACCEPTED", "REJECTED")
+        approved_at = created_at + timedelta(hours=4) if approved else None
+        issued_at = approved_at + timedelta(hours=2) if approved and status in ("ISSUED", "ACCEPTED", "REJECTED") else None
+        responded_at = issued_at + timedelta(days=2) if status in ("ACCEPTED", "REJECTED") else None
         offers.append({
             "offer_id": f"OFF-2026-{i+1:06d}", "application_id": app["application_id"], "salary": salary,
             "currency": "INR", "status": status, "approved_by": f"approver{i%9+1}@example.test" if approved else "",
-            "approved_at": stamp(rng) if approved else "", "issued_at": stamp(rng) if status in ("ISSUED", "ACCEPTED", "REJECTED") else "",
-            "responded_at": stamp(rng) if status in ("ACCEPTED", "REJECTED") else "",
-            "valid_until": (date(2026, 12, 1) + timedelta(days=i % 20)).isoformat(), "created_at": stamp(rng)
+            "approved_at": iso(approved_at) if approved_at else "", "issued_at": iso(issued_at) if issued_at else "",
+            "responded_at": iso(responded_at) if responded_at else "",
+            "valid_until": (created_at.date() + timedelta(days=30)).isoformat(), "created_at": iso(created_at)
         })
     stage_history = [{
         "application_id": app["application_id"], "from_stage": "", "to_stage": app["stage"],
@@ -234,6 +263,13 @@ def generate(seed: int, profile: str, output: Path) -> dict:
     assert all(i["application_id"] in app_ids for i in interviews)
     assert all(p["interview_id"] in int_ids and p["interviewer_id"] in {x["interviewer_id"] for x in interviewers} for p in panels)
     assert all(o["application_id"] in app_ids for o in offers)
+    assert all(a["applied_at"] <= a["last_stage_changed_at"] for a in applications)
+    assert all(i["scheduled_start"] < i["scheduled_end"] for i in interviews)
+    assert all((not o["approved_at"] or o["created_at"] <= o["approved_at"]) and
+               (not o["issued_at"] or o["approved_at"] <= o["issued_at"]) and
+               (not o["responded_at"] or o["issued_at"] <= o["responded_at"]) for o in offers)
+    assert all(o["salary"] >= next(r for r in requisitions if r["requisition_id"] == next(a for a in applications if a["application_id"] == o["application_id"])["requisition_id"])["salary_min"]
+               for o in offers[1:])
     assert len(app_ids) == len(applications)
     assert applications[1]["requisition_id"] == applications[2]["requisition_id"] and applications[1]["candidate_id"] == applications[2]["candidate_id"]
     assert requisitions[0]["status"] == "CLOSED" and applications[0]["stage"] not in ("HIRED", "REJECTED", "WITHDRAWN")
@@ -249,7 +285,9 @@ def generate(seed: int, profile: str, output: Path) -> dict:
     gt_dir.mkdir(parents=True, exist_ok=True)
     (gt_dir / "anomalies.json").write_text(json.dumps(truth, indent=2) + "\n", encoding="utf-8")
     manifest_doc = {"seed": seed, "profile": profile, "generated_at": "fixed-by-design", "tables": manifest,
-                    "validation": {"foreign_keys": "passed", "application_primary_keys": "unique", "ground_truth_cases": len(truth)}}
+                    "validation": {"foreign_keys": "passed", "application_primary_keys": "unique",
+                                   "application_timestamps": "passed", "offer_lifecycle_timestamps": "passed",
+                                   "interview_date_order": "passed", "ground_truth_cases": len(truth)}}
     (output / "manifest.json").write_text(json.dumps(manifest_doc, indent=2) + "\n", encoding="utf-8")
     return manifest_doc
 

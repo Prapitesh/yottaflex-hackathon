@@ -31,3 +31,5 @@ All timestamps are PostgreSQL TIMESTAMPTZ (UTC at rest). Money is NUMERIC(12,2) 
 - Feedback: FB-<interview-id>-<interviewer-id>
 - Offer: OFF-2026-000001
 - Department, Skill, Interviewer, ScreeningRule, ResumeArtifact: stable prefixed IDs (DEPT-, SKILL-, INTVR-, RULE-, RES-).
+
+Application ID convention: APP-<requisition-id>-<candidate-id> for the first application pair. Deliberate duplicate-application anomaly rows append -DUP-<sequence> to preserve immutable unique primary keys; the duplicate relationship is explicitly labelled in ground_truth/anomalies.json. Screening score and decision are derived from mandatory job-skill matches only. Application timestamps are chronological.
