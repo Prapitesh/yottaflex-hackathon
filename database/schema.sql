@@ -210,3 +210,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_offer_one_active_per_application
   WHERE status IN ('DRAFT','PENDING_APPROVAL','APPROVED','ISSUED');
 
 [executed on device: DESKTOP-8BCJIIV (c27eb905-f499-4290-a6f7-fc6e598ccef1)]
+
+-- Enforce append-only audit evidence at the database layer.
+CREATE OR REPLACE FUNCTION prevent_audit_event_mutation()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'audit_event is append-only; UPDATE and DELETE are prohibited'
+    USING ERRCODE = '55000';
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_audit_event_append_only ON audit_event;
+CREATE TRIGGER trg_audit_event_append_only
+BEFORE UPDATE OR DELETE ON audit_event
+FOR EACH ROW
+EXECUTE FUNCTION prevent_audit_event_mutation();

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CirclePlus, FileCheck2, Search, WalletCards, X } from 'lucide-react'
-import { apiRequest } from './api'
+import { apiRequest } from '../../shared/api/api.js'
 import './Offers.css'
 
 const demoApplications = [
@@ -29,7 +29,7 @@ function money(value, currency = 'INR') {
 }
 
 function dateLabel(value) {
-  if (!value) return '—'
+  if (!value) return 'â€”'
   return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
 }
 
@@ -98,7 +98,7 @@ export default function Offers() {
   const totalValueByCurrency = offers.filter((item) => activeStatuses.includes(item.status))
     .reduce((totals, item) => ({ ...totals, [item.currency]: (totals[item.currency] || 0) + Number(item.salary || 0) }), {})
   const totalValueLabel = Object.entries(totalValueByCurrency)
-    .map(([currency, amount]) => money(amount, currency)).join(' | ') || '—'
+    .map(([currency, amount]) => money(amount, currency)).join(' | ') || 'â€”'
 
   function updateForm(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
@@ -181,7 +181,7 @@ export default function Offers() {
       <section className="panel offers-table-panel">
         <div className="offers-toolbar"><div><h2>Offer register</h2><p>{filtered.length} offers shown</p></div><div className="offers-filters"><label className="offer-search"><Search size={15} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search candidate, role or offer ID..." /></label><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="ALL">All statuses</option>{Object.keys(statusLabels).map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select></div></div>
         <div className="table-wrap"><table><thead><tr><th>CANDIDATE / ROLE</th><th>OFFER ID</th><th>ANNUAL SALARY</th><th>STATUS</th><th>VALID UNTIL</th><th>APPROVAL / ISSUE</th><th>ACTIONS</th></tr></thead><tbody>
-          {loading ? <tr><td colSpan="7" className="empty-state">Loading offers…</td></tr> : filtered.map((offer) => {
+          {loading ? <tr><td colSpan="7" className="empty-state">Loading offersâ€¦</td></tr> : filtered.map((offer) => {
             const app = applicationMap.get(offer.applicationId)
             const candidate = candidateMap.get(app?.candidateId)
             const role = roleMap.get(app?.requisitionId)
@@ -201,7 +201,7 @@ export default function Offers() {
           <label className="form-field">Offer valid until<input required type="date" min={todayDate} name="validUntil" value={form.validUntil} onChange={updateForm} /></label>
           <label className="form-field">Created by<input required name="actor" value={form.actor} onChange={updateForm} /></label>
         </div>
-        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowCreate(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !selectedRole}>{busy ? 'Creating…' : 'Create draft offer'}</button></div>
+        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowCreate(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !selectedRole}>{busy ? 'Creatingâ€¦' : 'Create draft offer'}</button></div>
         </form></section></div>}
     </div>
   )

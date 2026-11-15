@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, BriefcaseBusiness, CirclePlus, Edit2, Mail, MapPin, Phone, Search, Users, X } from 'lucide-react'
-import { apiRequest } from './api'
+import { apiRequest } from '../../shared/api/api.js'
 import './Candidates.css'
 
 const demoCandidates = [
@@ -122,7 +122,7 @@ export default function Candidates() {
       <section className="panel candidates-table-panel">
         <div className="candidates-toolbar"><div><h2>Candidate directory</h2><p>{filtered.length} profiles shown</p></div><div className="candidates-filters"><label className="candidate-search"><Search size={15} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name, email or ID..." /></label><select className="location-filter" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}><option value="ALL">All locations</option>{locations.map((location) => <option key={location} value={location}>{location}</option>)}</select></div></div>
         <div className="table-wrap"><table><thead><tr><th>CANDIDATE</th><th>CONTACT</th><th>LOCATION</th><th>EXPERIENCE</th><th>PROFILE ID</th><th /></tr></thead><tbody>
-          {loading ? <tr><td colSpan="6" className="empty-state">Loading candidates…</td></tr> : filtered.map((candidate, index) => <tr key={candidate.id}><td><div className="candidate-cell"><div className={`candidate-initials avatar-${index % 5}`}>{initials(candidate.fullName)}</div><div className="candidate-name"><strong>{candidate.fullName}</strong><small>Candidate profile</small></div></div></td><td><div className="contact-stack"><span><Mail size={12} />{candidate.email}</span>{candidate.phone && <span><Phone size={12} />{candidate.phone}</span>}</div></td><td><span className="location-cell"><MapPin size={12} />{candidate.currentLocation || 'Not provided'}</span></td><td><strong className="experience-value">{years(candidate.totalExperienceMonths)}</strong></td><td><span className="candidate-id">{candidate.id}</span></td><td><button className="edit-candidate" onClick={() => openEdit(candidate)} disabled={!apiOnline} title="Edit candidate profile"><Edit2 size={15} /></button></td></tr>)}
+          {loading ? <tr><td colSpan="6" className="empty-state">Loading candidatesâ€¦</td></tr> : filtered.map((candidate, index) => <tr key={candidate.id}><td><div className="candidate-cell"><div className={`candidate-initials avatar-${index % 5}`}>{initials(candidate.fullName)}</div><div className="candidate-name"><strong>{candidate.fullName}</strong><small>Candidate profile</small></div></div></td><td><div className="contact-stack"><span><Mail size={12} />{candidate.email}</span>{candidate.phone && <span><Phone size={12} />{candidate.phone}</span>}</div></td><td><span className="location-cell"><MapPin size={12} />{candidate.currentLocation || 'Not provided'}</span></td><td><strong className="experience-value">{years(candidate.totalExperienceMonths)}</strong></td><td><span className="candidate-id">{candidate.id}</span></td><td><button className="edit-candidate" onClick={() => openEdit(candidate)} disabled={!apiOnline} title="Edit candidate profile"><Edit2 size={15} /></button></td></tr>)}
           {!loading && filtered.length === 0 && <tr><td colSpan="6" className="empty-state">No candidate profiles match your filters.</td></tr>}
         </tbody></table></div>
         <div className="table-footer"><span>Showing {filtered.length} of {items.length} candidate profiles</span><span>Profile data is separate from application decisions</span></div>
@@ -136,7 +136,7 @@ export default function Candidates() {
           <label className="form-field">Current location<input name="currentLocation" value={form.currentLocation} onChange={updateForm} maxLength="160" placeholder="Hyderabad" /></label>
           <label className="form-field span-2">Total experience (months)<input required type="number" min="0" name="totalExperienceMonths" value={form.totalExperienceMonths} onChange={updateForm} /></label>
         </div>
-        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowModal(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline}>{busy ? 'Saving…' : editingId ? 'Save changes' : 'Create candidate'}</button></div>
+        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowModal(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline}>{busy ? 'Savingâ€¦' : editingId ? 'Save changes' : 'Create candidate'}</button></div>
         {!apiOnline && <p className="modal-hint">Connect the backend to save candidate profiles. Demo mode is read-only.</p>}
         </form></section></div>}
     </div>

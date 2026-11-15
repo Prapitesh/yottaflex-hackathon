@@ -115,3 +115,25 @@ The generator is deterministic: re-running it with the same seed/profile produce
 - Database credentials belong in environment variables, never source control.
 - Actor values in requests support workflow traceability in this hackathon build; they are not authentication.
 - Production authentication, authorization and real resume-file storage are not implemented. The current workspace UI is a demo workspace, not a secured multi-user identity system.
+
+## Audit trail
+
+Audit history is required for workflow traceability and is retained in the append-only `audit_event` table. Existing lifecycle services write events for requisition, application, screening, interview, feedback and offer changes. Skill, candidate-skill evidence, resume metadata and screening-rule changes also write events through `AuditTrailService`.
+
+Read audit history:
+
+- `GET /api/v1/audit-events?aggregateType=APPLICATION&aggregateId=APP-...`
+- `GET /api/v1/audit-events/by-type?eventType=OFFER_APPROVED`
+
+The frontend includes an Audit Trail workspace page. Audit records cannot be updated or deleted by the database trigger. For an existing database that was created before this trigger, apply `database/migrations/V2__immutable_audit_events.sql` once in pgAdmin Query Tool while connected to `yottaflex-hackathon`. The trigger is also included in `database/schema.sql` for fresh installs.
+
+Frontend verification commands include the API helper unit tests:
+
+~~~powershell
+cd frontend
+npm run lint
+npm test
+npm run build
+~~~
+
+See `docs/engineering-standards.md` for layer responsibilities, validation strategy, test scope and known limitations.

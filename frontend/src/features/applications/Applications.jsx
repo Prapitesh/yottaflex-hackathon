@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ArrowRight, ClipboardList, FilePlus2, Search, ShieldCheck, X } from 'lucide-react'
-import { apiRequest } from './api'
+import { apiRequest } from '../../shared/api/api.js'
 import './Applications.css'
 
 const demoCandidates = [
@@ -22,7 +22,7 @@ const labels = { APPLIED: 'Applied', SCREENING: 'Screening', SHORTLISTED: 'Short
 const initialForm = { requisitionId: '', candidateId: '', resumeId: '' }
 
 function dateLabel(value) {
-  if (!value) return '—'
+  if (!value) return 'â€”'
   return new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
 }
 
@@ -110,7 +110,7 @@ export default function Applications() {
       const result = await apiRequest(`/applications/${application.id}/screen`, { method: 'POST' })
       setItems((current) => current.map((item) => item.id === application.id ? { ...item, stage: result.stage } : item))
       setScreeningResult({ ...result, candidateName: candidateMap.get(application.candidateId)?.fullName || application.candidateId })
-      setNotice(`Screening completed: ${result.decision} · ${result.score}/100`)
+      setNotice(`Screening completed: ${result.decision} Â· ${result.score}/100`)
     } catch (error) {
       setNotice(error.message)
     } finally {
@@ -167,7 +167,7 @@ export default function Applications() {
 
       {notice && <div className={`connection-notice ${apiOnline ? 'success' : 'warning'}`}><AlertCircle size={16} /><span>{notice}</span>{!apiOnline && <button onClick={() => { setLoading(true); loadData() }}>Retry connection</button>}<button className="notice-close" aria-label="Dismiss" onClick={() => setNotice('')}><X size={15} /></button></div>}
 
-      {screeningResult && <section className="screening-result-card"><div className="screening-result-icon"><ShieldCheck size={19} /></div><div className="screening-result-main"><strong>Screening result · {screeningResult.candidateName}</strong><span>{screeningResult.decision} decision · Score {screeningResult.score}/100</span><ul>{screeningResult.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul></div><button onClick={() => setScreeningResult(null)} aria-label="Dismiss result"><X size={15} /></button></section>}
+      {screeningResult && <section className="screening-result-card"><div className="screening-result-icon"><ShieldCheck size={19} /></div><div className="screening-result-main"><strong>Screening result Â· {screeningResult.candidateName}</strong><span>{screeningResult.decision} decision Â· Score {screeningResult.score}/100</span><ul>{screeningResult.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul></div><button onClick={() => setScreeningResult(null)} aria-label="Dismiss result"><X size={15} /></button></section>}
 
       <section className="application-stats">
         <div><span>Total applications</span><strong>{items.length}</strong><small>All candidate submissions</small></div>
@@ -179,11 +179,11 @@ export default function Applications() {
       <section className="panel applications-table-panel">
         <div className="applications-toolbar"><div><h2>Application pipeline</h2><p>{filtered.length} records shown</p></div><div className="applications-filters"><label className="application-search"><Search size={15} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search candidate, role or ID..." /></label><select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)}><option value="ALL">All stages</option>{stages.map((stage) => <option key={stage} value={stage}>{labels[stage]}</option>)}</select></div></div>
         <div className="table-wrap"><table><thead><tr><th>CANDIDATE</th><th>POSITION</th><th>APPLICATION ID</th><th>STAGE</th><th>APPLIED</th><th>NEXT ACTION</th></tr></thead><tbody>
-          {loading ? <tr><td colSpan="6" className="empty-state">Loading applications…</td></tr> : filtered.map((item) => {
+          {loading ? <tr><td colSpan="6" className="empty-state">Loading applicationsâ€¦</td></tr> : filtered.map((item) => {
             const candidate = candidateMap.get(item.candidateId)
             const role = requisitionMap.get(item.requisitionId)
             const busyRow = busyId === item.id
-            return <tr key={item.id}><td><div className="candidate-cell"><div className="application-avatar">{(candidate?.fullName || item.candidateId).split(' ').map((part) => part[0]).slice(0,2).join('').toUpperCase()}</div><div className="application-candidate"><strong>{candidate?.fullName || item.candidateId}</strong><small>{candidate?.email || 'Candidate profile unavailable'}</small></div></div></td><td><strong className="application-role">{role?.title || item.requisitionId}</strong></td><td><span className="application-id">{item.id}</span></td><td><span className={`application-stage ${item.stage.toLowerCase()}`}>{labels[item.stage] || item.stage}</span></td><td>{dateLabel(item.appliedAt)}</td><td><div className="application-actions">{item.stage === 'APPLIED' && <button disabled={!apiOnline || busyRow} onClick={() => screenApplication(item)}>{busyRow ? '…' : 'Screen'}</button>}{item.stage === 'SCREENING' && <><button disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'SHORTLISTED')}>Shortlist</button><button className="reject-application" disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'REJECTED')}>Reject</button></>}{['SHORTLISTED','INTERVIEW'].includes(item.stage) && <button className="reject-application" disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'REJECTED')}>Reject</button>}{!['HIRED','REJECTED','WITHDRAWN'].includes(item.stage) && <button className="withdraw-application" disabled={!apiOnline || busyRow} onClick={() => withdrawApplication(item)}>Withdraw</button>}</div></td></tr>
+            return <tr key={item.id}><td><div className="candidate-cell"><div className="application-avatar">{(candidate?.fullName || item.candidateId).split(' ').map((part) => part[0]).slice(0,2).join('').toUpperCase()}</div><div className="application-candidate"><strong>{candidate?.fullName || item.candidateId}</strong><small>{candidate?.email || 'Candidate profile unavailable'}</small></div></div></td><td><strong className="application-role">{role?.title || item.requisitionId}</strong></td><td><span className="application-id">{item.id}</span></td><td><span className={`application-stage ${item.stage.toLowerCase()}`}>{labels[item.stage] || item.stage}</span></td><td>{dateLabel(item.appliedAt)}</td><td><div className="application-actions">{item.stage === 'APPLIED' && <button disabled={!apiOnline || busyRow} onClick={() => screenApplication(item)}>{busyRow ? 'â€¦' : 'Screen'}</button>}{item.stage === 'SCREENING' && <><button disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'SHORTLISTED')}>Shortlist</button><button className="reject-application" disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'REJECTED')}>Reject</button></>}{['SHORTLISTED','INTERVIEW'].includes(item.stage) && <button className="reject-application" disabled={!apiOnline || busyRow} onClick={() => decideApplication(item, 'REJECTED')}>Reject</button>}{!['HIRED','REJECTED','WITHDRAWN'].includes(item.stage) && <button className="withdraw-application" disabled={!apiOnline || busyRow} onClick={() => withdrawApplication(item)}>Withdraw</button>}</div></td></tr>
           })}
           {!loading && filtered.length === 0 && <tr><td colSpan="6" className="empty-state">No applications match your filters.</td></tr>}
         </tbody></table></div>
@@ -192,11 +192,11 @@ export default function Applications() {
 
       {showCreate && <div className="modal-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowCreate(false) }}><section className="create-modal application-modal" role="dialog" aria-modal="true" aria-labelledby="application-modal-title"><div className="modal-heading"><div><span className="eyebrow">NEW CANDIDATE SUBMISSION</span><h2 id="application-modal-title">Create application</h2><p>Link an existing candidate to an approved requisition.</p></div><button className="modal-close" onClick={() => setShowCreate(false)} aria-label="Close"><X size={18} /></button></div>
         <form onSubmit={createApplication}><div className="form-grid">
-          <label className="form-field span-2">Approved requisition<select required name="requisitionId" value={form.requisitionId} onChange={updateForm}><option value="">Select an open requisition</option>{requisitions.filter((item) => item.status === 'APPROVED').map((item) => <option key={item.id} value={item.id}>{item.title} · {item.id}</option>)}</select></label>
-          <label className="form-field span-2">Candidate<select required name="candidateId" value={form.candidateId} onChange={updateForm}><option value="">Select a candidate profile</option>{candidates.map((item) => <option key={item.id} value={item.id}>{item.fullName} · {item.email}</option>)}</select></label>
+          <label className="form-field span-2">Approved requisition<select required name="requisitionId" value={form.requisitionId} onChange={updateForm}><option value="">Select an open requisition</option>{requisitions.filter((item) => item.status === 'APPROVED').map((item) => <option key={item.id} value={item.id}>{item.title} Â· {item.id}</option>)}</select></label>
+          <label className="form-field span-2">Candidate<select required name="candidateId" value={form.candidateId} onChange={updateForm}><option value="">Select a candidate profile</option>{candidates.map((item) => <option key={item.id} value={item.id}>{item.fullName} Â· {item.email}</option>)}</select></label>
           <label className="form-field span-2">Resume ID (optional)<input name="resumeId" value={form.resumeId} onChange={updateForm} maxLength="40" placeholder="RES-2026-000001" /></label>
         </div>
-        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowCreate(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !requisitions.some((item) => item.status === 'APPROVED') || !candidates.length}>{busy ? 'Creating…' : 'Create application'} <ArrowRight size={14} /></button></div>
+        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowCreate(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !requisitions.some((item) => item.status === 'APPROVED') || !candidates.length}>{busy ? 'Creatingâ€¦' : 'Create application'} <ArrowRight size={14} /></button></div>
         </form></section></div>}
     </div>
   )

@@ -1,16 +1,40 @@
-# React + Vite
+# Frontend structure and standards
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+```text
+src/
+  app/                 # Application shell, navigation and layout
+  features/
+    dashboard/         # Dashboard page and view styles
+    requisitions/      # Requisition workflow
+    candidates/        # Candidate management
+    applications/      # Application and screening workflow
+    interviews/        # Scheduling, panel and feedback workflow
+    offers/            # Offer lifecycle
+    audit/             # Read-only audit history viewer
+  shared/
+    api/               # Shared API client and its unit tests
+  assets/              # Static assets
+  index.css            # Global design tokens and base styles
+  main.jsx             # React entry point
+```
 
-Currently, two official plugins are available:
+## Conventions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Keep workflow UI inside its feature folder; share transport logic through `shared/api`.
+- Keep API calls in the shared client so JSON handling and error messages remain consistent.
+- Use controlled form fields, browser constraints and server-side validation; never rely on frontend validation alone.
+- Show loading, empty and error states for asynchronous requests.
+- Use semantic labels, buttons, navigation landmarks, and `role=alert` / `role=status` for feedback.
+- Keep derived UI values derived from state; do not duplicate server state unnecessarily.
+- Keep credentials out of frontend source. The Vite proxy targets the local backend only in development.
 
-## React Compiler
+## Commands
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```powershell
+npm ci
+npm run lint
+npm test
+npm run build
+```
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The API helper tests use Node's built-in test runner and require no extra test framework.
