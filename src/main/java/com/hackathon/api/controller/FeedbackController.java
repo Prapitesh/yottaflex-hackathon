@@ -29,6 +29,11 @@ public class FeedbackController {
                 .body(feedbackService.submitFeedback(interviewId, request));
     }
 
+    @GetMapping("/feedback")
+    public ResponseEntity<List<FeedbackResponse>> getAllFeedback() {
+        return ResponseEntity.ok(feedbackService.getAllFeedback());
+    }
+
     @GetMapping("/interviews/{interviewId}/feedback")
     public ResponseEntity<List<FeedbackResponse>> getForInterview(
             @PathVariable String interviewId) {

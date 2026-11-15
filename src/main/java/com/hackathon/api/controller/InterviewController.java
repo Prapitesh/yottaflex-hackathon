@@ -28,6 +28,11 @@ public class InterviewController {
                 .body(interviewService.scheduleInterview(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<InterviewResponse>> getAll() {
+        return ResponseEntity.ok(interviewService.getAllInterviews());
+    }
+
     @GetMapping("/{interviewId}")
     public ResponseEntity<InterviewResponse> getById(
             @PathVariable String interviewId) {

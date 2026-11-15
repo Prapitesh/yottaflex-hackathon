@@ -13,6 +13,8 @@ public interface InterviewRepository extends JpaRepository<Interview, String> {
 
     List<Interview> findByApplication_IdOrderByScheduledStartDesc(String applicationId);
 
+    List<Interview> findAllByOrderByScheduledStartDesc();
+
     @Query("""
             select distinct interview
             from Interview interview

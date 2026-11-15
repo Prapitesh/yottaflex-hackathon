@@ -126,6 +126,13 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<InterviewResponse> getAllInterviews() {
+        return interviewRepository.findAllByOrderByScheduledStartDesc()
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<InterviewResponse> getInterviewsForApplication(String applicationId) {
         if (!applicationRepository.existsById(applicationId)) {
             throw new ResourceNotFoundException("Application not found: " + applicationId);
@@ -175,8 +182,30 @@ public class InterviewServiceImpl implements InterviewService {
             String interviewId, InterviewActionRequest request) {
         Interview interview = findInterview(interviewId);
         requireActive(interview);
+
+        Application application = interview.getApplication();
+        ApplicationStage previousStage = application.getStage();
+
         interview.complete();
         Interview saved = interviewRepository.save(interview);
+
+        // Seeded interviews may exist while their application is still SHORTLISTED.
+        // Completing the first interview advances that application into the interview stage.
+        if (previousStage == ApplicationStage.SHORTLISTED) {
+            RecruitmentPolicy.requireValidTransition(
+                    ApplicationStage.SHORTLISTED, ApplicationStage.INTERVIEW);
+            OffsetDateTime changedAt = OffsetDateTime.now();
+            application.changeStage(ApplicationStage.INTERVIEW, changedAt);
+            applicationRepository.save(application);
+            stageHistoryRepository.save(new ApplicationStageHistory(
+                    application, ApplicationStage.SHORTLISTED, ApplicationStage.INTERVIEW,
+                    request.actor().trim(), "Interview completed: " + saved.getId()));
+            auditEventRepository.save(new AuditEvent(
+                    "APPLICATION", application.getId(), "APPLICATION_MOVED_TO_INTERVIEW",
+                    request.actor().trim(), Map.of("interviewId", saved.getId(),
+                            "reason", request.reason().trim())));
+        }
+
         recordAction(saved, "INTERVIEW_COMPLETED", request);
         return toResponse(saved);
     }
@@ -272,6 +301,10 @@ public class InterviewServiceImpl implements InterviewService {
         if (start == null || end == null || !end.isAfter(start)) {
             throw new IllegalArgumentException(
                     "Interview end time must be after its start time");
+        }
+        if (java.time.Duration.between(start, end).compareTo(java.time.Duration.ofHours(8)) > 0) {
+            throw new IllegalArgumentException(
+                    "Interview duration cannot exceed 8 hours");
         }
         if (requireFutureStart && !start.isAfter(OffsetDateTime.now())) {
             throw new IllegalArgumentException("Interview must be scheduled in the future");

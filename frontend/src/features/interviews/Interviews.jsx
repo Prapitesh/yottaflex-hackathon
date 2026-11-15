@@ -30,7 +30,7 @@ const initialSchedule = { applicationId: '', interviewType: 'TECHNICAL', schedul
 const initialFeedback = { interviewerId: '', score: '8', recommendation: 'YES', strengths: '', concerns: '' }
 
 function localIso(value) {
-  return value ? new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'â€”'
+  return value ? new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
 }
 
 export default function Interviews() {
@@ -53,23 +53,26 @@ export default function Interviews() {
 
   async function loadData() {
     try {
-      const [apps, people, jobs, panel] = await Promise.all([
+      const [apps, people, jobs, panel, records, feedbackRows] = await Promise.all([
         apiRequest('/applications'), apiRequest('/candidates'),
         apiRequest('/requisitions'), apiRequest('/interviewers'),
+        apiRequest('/interviews'), apiRequest('/feedback'),
       ])
-      const eligible = apps.filter((item) => ['SHORTLISTED', 'INTERVIEW'].includes(item.stage))
-      const interviewGroups = await Promise.all(eligible.map(async (application) => {
-        const records = await apiRequest(`/interviews/by-application/${application.id}`)
-        return Promise.all(records.map(async (record) => ({
-          ...record,
-          feedback: await apiRequest(`/interviews/${record.id}/feedback`),
-        })))
+      const feedbackByInterview = new Map()
+      feedbackRows.forEach((feedback) => {
+        const current = feedbackByInterview.get(feedback.interviewId) || []
+        current.push(feedback)
+        feedbackByInterview.set(feedback.interviewId, current)
+      })
+      const interviewGroups = records.map((record) => ({
+        ...record,
+        feedback: feedbackByInterview.get(record.id) || [],
       }))
       setApplications(apps)
       setCandidates(people)
       setRoles(jobs)
       setInterviewers(panel)
-      setInterviews(interviewGroups.flat())
+      setInterviews(interviewGroups)
       setApiOnline(true)
       setNotice('')
     } catch {
@@ -124,6 +127,36 @@ export default function Interviews() {
 
   async function scheduleInterview(event) {
     event.preventDefault()
+    if (!schedule.applicationId) {
+      setNotice('Select an eligible application.')
+      return
+    }
+    const startTime = new Date(schedule.scheduledStart)
+    const endTime = new Date(schedule.scheduledEnd)
+    if (!schedule.scheduledStart || Number.isNaN(startTime.getTime()) || !schedule.scheduledEnd || Number.isNaN(endTime.getTime())) {
+      setNotice('Enter valid start and end date/time values.')
+      return
+    }
+    if (endTime <= startTime) {
+      setNotice('Interview end time must be later than its start time.')
+      return
+    }
+    if (endTime - startTime > 8 * 60 * 60 * 1000) {
+      setNotice('Interview duration cannot exceed 8 hours. Please check the end date and time.')
+      return
+    }
+    if (startTime <= new Date()) {
+      setNotice('Interview start time must be in the future.')
+      return
+    }
+    if (schedule.mode !== 'PHONE' && !schedule.meetingLocation.trim()) {
+      setNotice('Enter the meeting link or onsite location for this interview mode.')
+      return
+    }
+    if (!schedule.actor.trim()) {
+      setNotice('Enter the scheduling actor identity.')
+      return
+    }
     if (!schedule.leadInterviewerId) {
       setNotice('Select exactly one lead interviewer.')
       return
@@ -140,8 +173,8 @@ export default function Interviews() {
         body: JSON.stringify({
           applicationId: schedule.applicationId,
           interviewType: schedule.interviewType,
-          scheduledStart: new Date(schedule.scheduledStart).toISOString(),
-          scheduledEnd: new Date(schedule.scheduledEnd).toISOString(),
+          scheduledStart: startTime.toISOString(),
+          scheduledEnd: endTime.toISOString(),
           mode: schedule.mode,
           meetingLocation: schedule.meetingLocation || null,
           actor: schedule.actor,
@@ -256,7 +289,7 @@ export default function Interviews() {
         <button className="button-primary" onClick={() => setShowSchedule(true)} disabled={!apiOnline || !eligibleApplications.length}><CalendarPlus size={16} /> Schedule interview</button>
       </section>
 
-      {notice && <div className={`connection-notice ${apiOnline ? 'success' : 'warning'}`}><AlertCircle size={16} /><span>{notice}</span>{!apiOnline && <button onClick={() => { setLoading(true); loadData() }}>Retry connection</button>}<button className="notice-close" aria-label="Dismiss" onClick={() => setNotice('')}><X size={15} /></button></div>}
+      {notice && <div className={`connection-notice ${!apiOnline ? 'warning' : (/^(Interview scheduled|Interview (reschedule|complete|cancel) completed|Interviewer feedback saved|Candidate selected)/.test(notice) ? 'success' : 'error')}`}><AlertCircle size={16} /><span>{notice}</span>{!apiOnline && <button onClick={() => { setLoading(true); loadData() }}>Retry connection</button>}<button className="notice-close" aria-label="Dismiss" onClick={() => setNotice('')}><X size={15} /></button></div>}
 
       <section className="interview-stats">
         <div><span>Total interviews</span><strong>{interviews.length}</strong><small>Across eligible applications</small></div>
@@ -268,14 +301,14 @@ export default function Interviews() {
       <section className="panel interviews-table-panel">
         <div className="interviews-toolbar"><div><h2>Interview schedule</h2><p>{filtered.length} interviews shown</p></div><div className="interviews-filters"><label className="interview-search"><Search size={15} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search candidate, role or ID..." /></label><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="ALL">All statuses</option><option value="SCHEDULED">Scheduled</option><option value="RESCHEDULED">Rescheduled</option><option value="COMPLETED">Completed</option><option value="CANCELLED">Cancelled</option><option value="NO_SHOW">No show</option></select></div></div>
         <div className="table-wrap"><table><thead><tr><th>CANDIDATE / ROLE</th><th>INTERVIEW</th><th>SCHEDULED TIME</th><th>PANEL</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>
-          {loading ? <tr><td colSpan="6" className="empty-state">Loading interviewsâ€¦</td></tr> : filtered.map((item) => {
+          {loading ? <tr><td colSpan="6" className="empty-state">Loading interviews…</td></tr> : filtered.map((item) => {
             const app = applicationMap.get(item.applicationId)
             const candidate = candidateMap.get(app?.candidateId)
             const role = roleMap.get(app?.requisitionId)
             const busyRow = busyId === item.id
             const canChange = ['SCHEDULED','RESCHEDULED'].includes(item.status)
             const remainingFeedback = item.panel.filter((person) => !item.feedback.some((entry) => entry.interviewerId === person.interviewerId)).length
-            return <tr key={item.id}><td><div className="interview-candidate"><strong>{candidate?.fullName || app?.candidateId || item.applicationId}</strong><small>{role?.title || app?.requisitionId}</small></div></td><td><strong className="interview-type">{item.interviewType}</strong><small className="interview-id">{item.id}</small></td><td><span className="interview-time"><CalendarClock size={13} />{localIso(item.scheduledStart)}</span><small className="interview-mode">{item.mode}{item.meetingLocation ? ` Â· ${item.meetingLocation}` : ''}</small></td><td><div className="panel-cell"><Users size={13} /><span>{item.panel.length} assigned</span><small>{item.panel.map((person) => person.interviewerName).join(', ')}</small></div></td><td><span className={`interview-status ${item.status.toLowerCase()}`}>{statusLabels[item.status] || item.status}</span></td><td><div className="interview-actions">{canChange && <><button disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'reschedule')}>Move</button><button disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'complete')}>Complete</button><button className="cancel-interview" disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'cancel')}>Cancel</button></>}{item.status === 'COMPLETED' && remainingFeedback > 0 && <button disabled={!apiOnline || busyRow} onClick={() => openFeedback(item)}>Feedback</button>}</div></td></tr>
+            return <tr key={item.id}><td><div className="interview-candidate"><strong>{candidate?.fullName || app?.candidateId || item.applicationId}</strong><small>{role?.title || app?.requisitionId}</small></div></td><td><strong className="interview-type">{item.interviewType}</strong><small className="interview-id">{item.id}</small></td><td><span className="interview-time"><CalendarClock size={13} />{localIso(item.scheduledStart)}</span><small className="interview-mode">{item.mode}{item.meetingLocation ? ` · ${item.meetingLocation}` : ''}</small></td><td><div className="panel-cell"><Users size={13} /><span>{item.panel.length} assigned</span><small>{item.panel.map((person) => person.interviewerName).join(', ')}</small></div></td><td><span className={`interview-status ${item.status.toLowerCase()}`}>{statusLabels[item.status] || item.status}</span></td><td><div className="interview-actions">{canChange && <><button disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'reschedule')}>Move</button><button disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'complete')}>Complete</button><button className="cancel-interview" disabled={!apiOnline || busyRow} onClick={() => interviewAction(item,'cancel')}>Cancel</button></>}{item.status === 'COMPLETED' && remainingFeedback > 0 && <button disabled={!apiOnline || busyRow} onClick={() => openFeedback(item)}>Feedback</button>}</div></td></tr>
           })}
           {!loading && filtered.length === 0 && <tr><td colSpan="6" className="empty-state">No interviews match your filters. Schedule one for a shortlisted application.</td></tr>}
         </tbody></table></div>
@@ -286,28 +319,28 @@ export default function Interviews() {
 
       {showSchedule && <div className="modal-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowSchedule(false) }}><section className="create-modal interview-modal" role="dialog" aria-modal="true" aria-labelledby="schedule-title"><div className="modal-heading"><div><span className="eyebrow">INTERVIEW PLANNING</span><h2 id="schedule-title">Schedule interview</h2><p>Assign one lead interviewer and any additional panelists.</p></div><button className="modal-close" onClick={() => setShowSchedule(false)} aria-label="Close"><X size={18} /></button></div>
         <form onSubmit={scheduleInterview}><div className="form-grid">
-          <label className="form-field span-2">Application<select required name="applicationId" value={schedule.applicationId} onChange={updateSchedule}><option value="">Select a shortlisted application</option>{eligibleApplications.map((app) => <option key={app.id} value={app.id}>{candidateMap.get(app.candidateId)?.fullName || app.candidateId} Â· {roleMap.get(app.requisitionId)?.title || app.requisitionId}</option>)}</select></label>
+          <label className="form-field span-2">Application<select required name="applicationId" value={schedule.applicationId} onChange={updateSchedule}><option value="">Select an eligible application (Shortlisted / Interview)</option>{eligibleApplications.map((app) => <option key={app.id} value={app.id}>{candidateMap.get(app.candidateId)?.fullName || app.candidateId} · {roleMap.get(app.requisitionId)?.title || app.requisitionId}</option>)}</select></label>
           <label className="form-field">Interview type<select name="interviewType" value={schedule.interviewType} onChange={updateSchedule}><option value="SCREENING">Screening</option><option value="TECHNICAL">Technical</option><option value="MANAGERIAL">Managerial</option><option value="HR">HR</option><option value="FINAL">Final</option></select></label>
           <label className="form-field">Mode<select name="mode" value={schedule.mode} onChange={updateSchedule}><option value="ONLINE">Online</option><option value="ONSITE">Onsite</option><option value="PHONE">Phone</option></select></label>
           <label className="form-field">Start time<input required type="datetime-local" name="scheduledStart" value={schedule.scheduledStart} onChange={updateSchedule} /></label>
           <label className="form-field">End time<input required type="datetime-local" name="scheduledEnd" value={schedule.scheduledEnd} onChange={updateSchedule} /></label>
           <label className="form-field span-2">Meeting link / location<input name="meetingLocation" value={schedule.meetingLocation} onChange={updateSchedule} placeholder="Meeting URL or office location" /></label>
-          <label className="form-field span-2">Lead interviewer<select required name="leadInterviewerId" value={schedule.leadInterviewerId} onChange={updateSchedule}><option value="">Select one lead</option>{interviewers.map((person) => <option key={person.id} value={person.id}>{person.fullName} Â· {person.email}</option>)}</select></label>
+          <label className="form-field span-2">Lead interviewer<select required name="leadInterviewerId" value={schedule.leadInterviewerId} onChange={updateSchedule}><option value="">Select one lead</option>{interviewers.map((person) => <option key={person.id} value={person.id}>{person.fullName} · {person.email}</option>)}</select></label>
           <div className="form-field span-2"><span>Additional panelists</span><div className="panelist-options">{interviewers.filter((person) => person.id !== schedule.leadInterviewerId).map((person) => <label key={person.id}><input type="checkbox" checked={schedule.panelInterviewerIds.includes(person.id)} onChange={() => togglePanelist(person.id)} /><span>{person.fullName}</span><small>{person.email}</small></label>)}</div></div>
           <label className="form-field span-2">Scheduled by<input required name="actor" value={schedule.actor} onChange={updateSchedule} /></label>
         </div>
-        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowSchedule(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !interviewers.length}>{busy ? 'Schedulingâ€¦' : 'Schedule interview'}</button></div>
+        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowSchedule(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !apiOnline || !interviewers.length}>{busy ? 'Scheduling…' : 'Schedule interview'}</button></div>
         </form></section></div>}
 
       {showFeedback && <div className="modal-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowFeedback(null) }}><section className="create-modal interview-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title"><div className="modal-heading"><div><span className="eyebrow">STRUCTURED ASSESSMENT</span><h2 id="feedback-title">Submit interviewer feedback</h2><p>Feedback is recorded once per assigned interviewer.</p></div><button className="modal-close" onClick={() => setShowFeedback(null)} aria-label="Close"><X size={18} /></button></div>
         <form onSubmit={submitFeedback}><div className="form-grid">
-          <label className="form-field span-2">Interviewer<select required name="interviewerId" value={feedbackForm.interviewerId} onChange={updateFeedback}>{showFeedback.panel.filter((person) => !showFeedback.feedback.some((entry) => entry.interviewerId === person.interviewerId)).map((person) => <option key={person.interviewerId} value={person.interviewerId}>{person.interviewerName} Â· {person.role}</option>)}</select></label>
-          <label className="form-field">Score (0â€“10)<input required type="number" min="0" max="10" step="0.5" name="score" value={feedbackForm.score} onChange={updateFeedback} /></label>
+          <label className="form-field span-2">Interviewer<select required name="interviewerId" value={feedbackForm.interviewerId} onChange={updateFeedback}>{showFeedback.panel.filter((person) => !showFeedback.feedback.some((entry) => entry.interviewerId === person.interviewerId)).map((person) => <option key={person.interviewerId} value={person.interviewerId}>{person.interviewerName} · {person.role}</option>)}</select></label>
+          <label className="form-field">Score (0–10)<input required type="number" min="0" max="10" step="0.5" name="score" value={feedbackForm.score} onChange={updateFeedback} /></label>
           <label className="form-field">Recommendation<select name="recommendation" value={feedbackForm.recommendation} onChange={updateFeedback}><option value="STRONG_YES">Strong yes</option><option value="YES">Yes</option><option value="HOLD">Hold</option><option value="NO">No</option><option value="STRONG_NO">Strong no</option></select></label>
           <label className="form-field span-2">Strengths<textarea required rows="3" name="strengths" value={feedbackForm.strengths} onChange={updateFeedback} placeholder="What did the candidate do well?" /></label>
-          <label className="form-field span-2">Concerns (optional)<textarea rows="2" name="concerns" value={feedbackForm.concerns} onChange={updateFeedback} placeholder="Areas to probe or improveâ€¦" /></label>
+          <label className="form-field span-2">Concerns (optional)<textarea rows="2" name="concerns" value={feedbackForm.concerns} onChange={updateFeedback} placeholder="Areas to probe or improve…" /></label>
         </div>
-        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowFeedback(null)}>Cancel</button><button type="submit" className="button-primary" disabled={busy}>{busy ? 'Savingâ€¦' : 'Submit feedback'} <MessageSquareText size={14} /></button></div>
+        <div className="modal-actions"><button type="button" className="button-secondary" onClick={() => setShowFeedback(null)}>Cancel</button><button type="submit" className="button-primary" disabled={busy}>{busy ? 'Saving…' : 'Submit feedback'} <MessageSquareText size={14} /></button></div>
         </form></section></div>}
     </div>
   )

@@ -107,6 +107,40 @@ class InterviewServiceImplTest {
     }
 
     @Test
+    void completingInterviewMovesSeededShortlistedApplicationIntoInterviewStage() {
+        Interview scheduled = new Interview(
+                "INT-2026-COMPLETE01", application, InterviewType.HR,
+                start.minusDays(2), end.minusDays(2), InterviewMode.ONLINE, null);
+        when(interviewRepository.findById(scheduled.getId()))
+                .thenReturn(Optional.of(scheduled));
+
+        var response = service.completeInterview(
+                scheduled.getId(),
+                new InterviewActionRequest("recruiter@example.test", "Interview completed"));
+
+        assertEquals(InterviewStatus.COMPLETED, response.status());
+        assertEquals(ApplicationStage.INTERVIEW, application.getStage());
+        verify(applicationRepository).save(application);
+        verify(stageHistoryRepository).save(any(ApplicationStageHistory.class));
+        verify(auditEventRepository, times(2)).save(any(AuditEvent.class));
+    }
+
+    @Test
+    void schedulingRejectsInterviewLongerThanEightHours() {
+        ScheduleInterviewRequest request = new ScheduleInterviewRequest(
+                application.getId(), InterviewType.TECHNICAL,
+                start, start.plusHours(24), InterviewMode.ONLINE, "Video conference",
+                "recruiter@example.test",
+                List.of(new InterviewPanelistRequest(
+                        interviewer.getId(), InterviewPanelRole.LEAD)));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.scheduleInterview(request));
+        verify(interviewRepository, never()).save(any(Interview.class));
+        verify(panelRepository, never()).saveAll(anyList());
+    }
+
+    @Test
     void schedulingRejectsOverlappingInterviewerSlot() {
         when(interviewRepository.findConflictingInterviewsForInterviewer(
                 eq(interviewer.getId()), anyList(), any(), any(), isNull()))

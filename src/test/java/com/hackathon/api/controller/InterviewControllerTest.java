@@ -17,6 +17,10 @@ class InterviewControllerTest {
   InterviewController c=new InterviewController(new FakeService());
   assertEquals(1,c.getForApplication("APP-1").getBody().size());
  }
+ @Test void getAllReturnsAllInterviewRecords(){
+  InterviewController c=new InterviewController(new FakeService());
+  assertEquals(1,c.getAll().getBody().size());
+ }
  @Test void rescheduleCancelAndCompleteDelegate(){
   FakeService f=new FakeService(); InterviewController c=new InterviewController(f);
   c.reschedule("INT-1",null); c.cancel("INT-1",null); c.complete("INT-1",null);
@@ -27,6 +31,7 @@ class InterviewControllerTest {
   InterviewResponse response(){return new InterviewResponse("INT-1","APP-1",InterviewType.TECHNICAL,OffsetDateTime.now(),OffsetDateTime.now().plusHours(1),InterviewMode.ONLINE,null,InterviewStatus.SCHEDULED,List.of());}
   public InterviewResponse scheduleInterview(ScheduleInterviewRequest r){return response();}
   public InterviewResponse getInterviewById(String id){return response();}
+  public List<InterviewResponse> getAllInterviews(){return List.of(response());}
   public List<InterviewResponse> getInterviewsForApplication(String id){return List.of(response());}
   public InterviewResponse rescheduleInterview(String id,RescheduleInterviewRequest r){rescheduled=true;return response();}
   public InterviewResponse cancelInterview(String id,InterviewActionRequest r){cancelled=true;return response();}

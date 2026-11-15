@@ -89,6 +89,12 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<FeedbackResponse> getAllFeedback() {
+        return feedbackRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<FeedbackResponse> getFeedbackForInterview(String interviewId) {
         if (!interviewRepository.existsById(interviewId)) {
             throw new ResourceNotFoundException("Interview not found: " + interviewId);

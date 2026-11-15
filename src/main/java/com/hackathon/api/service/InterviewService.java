@@ -7,6 +7,7 @@ import java.util.List;
 public interface InterviewService {
     InterviewResponse scheduleInterview(ScheduleInterviewRequest request);
     InterviewResponse getInterviewById(String interviewId);
+    List<InterviewResponse> getAllInterviews();
     List<InterviewResponse> getInterviewsForApplication(String applicationId);
     InterviewResponse rescheduleInterview(String interviewId, RescheduleInterviewRequest request);
     InterviewResponse cancelInterview(String interviewId, InterviewActionRequest request);

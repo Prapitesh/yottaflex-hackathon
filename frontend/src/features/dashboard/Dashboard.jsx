@@ -57,22 +57,22 @@ export default function Dashboard() {
       return `${candidate?.fullName || ''} ${candidate?.email || ''} ${role?.title || ''} ${item.id}`.toLowerCase().includes(query.toLowerCase())
     }).slice(0, 8), [applications, candidateMap, requisitionMap, query])
 
-  const pipeline = stages.slice(0, 6).map((stage) => ({ stage, count: applications.filter((item) => item.stage === stage).length }))
+  const pipeline = stages.map((stage) => ({ stage, count: applications.filter((item) => item.stage === stage).length }))
   const maxPipeline = Math.max(1, ...pipeline.map((item) => item.count))
   const activeApplications = applications.filter((item) => !['HIRED', 'REJECTED', 'WITHDRAWN'].includes(item.stage)).length
   const pendingOffers = offers.filter((item) => ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'ISSUED'].includes(item.status)).length
 
   return <div className="page-content">
     <section className="welcome-row">
-      <div><div className="eyebrow">LIVE WORKSPACE DATA</div><h1>Hiring overview <span>âœ¦</span></h1><p>Recruitment activity calculated from the connected Spring Boot API.</p></div>
+      <div><div className="eyebrow">LIVE WORKSPACE DATA</div><h1>Hiring overview <span>✦</span></h1><p>Recruitment activity calculated from the connected Spring Boot API.</p></div>
       <div className="welcome-actions"><span className="demo-indicator"><i /> {error ? 'API unavailable' : 'Live API data'}</span></div>
     </section>
     {error && <div className="connection-notice warning"><AlertCircle size={16}/><span>{error}</span><button onClick={() => window.location.reload()}>Retry</button></div>}
     <section className="metric-grid" aria-label="Hiring metrics">
-      <MetricCard title="Total candidates" value={loading ? 'â€”' : candidates.length.toLocaleString('en-IN')} note="Candidate profiles" icon={Users} color="blue"/>
-      <MetricCard title="Open requisitions" value={loading ? 'â€”' : requisitions.filter((item) => item.status === 'APPROVED').length.toLocaleString('en-IN')} note="Approved roles" icon={BriefcaseBusiness} color="violet"/>
-      <MetricCard title="Active applications" value={loading ? 'â€”' : activeApplications.toLocaleString('en-IN')} note="In the hiring pipeline" icon={ClipboardList} color="amber"/>
-      <MetricCard title="Pending offers" value={loading ? 'â€”' : pendingOffers.toLocaleString('en-IN')} note="Awaiting candidate / action" icon={WalletCards} color="green"/>
+      <MetricCard title="Total candidates" value={loading ? '—' : candidates.length.toLocaleString('en-IN')} note="Candidate profiles" icon={Users} color="blue"/>
+      <MetricCard title="Open requisitions" value={loading ? '—' : requisitions.filter((item) => item.status === 'APPROVED').length.toLocaleString('en-IN')} note="Approved roles" icon={BriefcaseBusiness} color="violet"/>
+      <MetricCard title="Active applications" value={loading ? '—' : activeApplications.toLocaleString('en-IN')} note="In the hiring pipeline" icon={ClipboardList} color="amber"/>
+      <MetricCard title="Pending offers" value={loading ? '—' : pendingOffers.toLocaleString('en-IN')} note="Awaiting candidate / action" icon={WalletCards} color="green"/>
     </section>
     <section className="content-grid">
       <div className="panel pipeline-panel">
@@ -95,14 +95,14 @@ export default function Dashboard() {
     <section className="panel applications-panel">
       <div className="panel-header"><div><h2>Recent applications</h2><p>Latest candidate activity from the API</p></div><label className="search-box"><Search size={15}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search applications..."/></label></div>
       <div className="table-wrap"><table><thead><tr><th>CANDIDATE</th><th>POSITION</th><th>STAGE</th><th>SCREENING SCORE</th><th>LAST ACTIVITY</th></tr></thead><tbody>
-        {loading ? <tr><td colSpan="5" className="empty-state">Loading dashboard dataâ€¦</td></tr> : filtered.map((item) => {
+        {loading ? <tr><td colSpan="5" className="empty-state">Loading dashboard data…</td></tr> : filtered.map((item) => {
           const candidate = candidateMap.get(item.candidateId)
           const role = requisitionMap.get(item.requisitionId)
-          return <tr key={item.id}><td><div className="candidate-cell"><div className="person-avatar small blue">{(candidate?.fullName || 'C').split(' ').map((part) => part[0]).slice(0,2).join('').toUpperCase()}</div><strong>{candidate?.fullName || item.candidateId}</strong></div></td><td>{role?.title || item.requisitionId}</td><td><span className="stage-pill blue">{item.stage}</span></td><td><strong className="score-value">{item.screeningScore == null ? 'â€”' : `${item.screeningScore}%`}</strong></td><td className="muted-cell">{item.lastStageChangedAt ? new Intl.DateTimeFormat('en-IN',{dateStyle:'medium'}).format(new Date(item.lastStageChangedAt)) : 'â€”'}</td></tr>
+          return <tr key={item.id}><td><div className="candidate-cell"><div className="person-avatar small blue">{(candidate?.fullName || 'C').split(' ').map((part) => part[0]).slice(0,2).join('').toUpperCase()}</div><strong>{candidate?.fullName || item.candidateId}</strong></div></td><td>{role?.title || item.requisitionId}</td><td><span className="stage-pill blue">{item.stage}</span></td><td><strong className="score-value">{item.screeningScore == null ? '—' : `${item.screeningScore}%`}</strong></td><td className="muted-cell">{item.lastStageChangedAt ? new Intl.DateTimeFormat('en-IN',{dateStyle:'medium'}).format(new Date(item.lastStageChangedAt)) : '—'}</td></tr>
         })}
         {!loading && filtered.length === 0 && <tr><td colSpan="5" className="empty-state">No matching applications.</td></tr>}
       </tbody></table></div>
     </section>
-    <footer className="page-footer"><span>RecruitOS Â· Recruitment operations workspace</span><span>{loading ? 'Connectingâ€¦' : error ? 'Showing no stale demo values' : 'Metrics sourced from backend records'}</span></footer>
+    <footer className="page-footer"><span>RecruitOS · Recruitment operations workspace</span><span>{loading ? 'Connecting…' : error ? 'Showing no stale demo values' : 'Metrics sourced from backend records'}</span></footer>
   </div>
 }

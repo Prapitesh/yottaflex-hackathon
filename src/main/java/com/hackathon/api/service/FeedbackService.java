@@ -9,5 +9,6 @@ import java.util.List;
 public interface FeedbackService {
     FeedbackResponse submitFeedback(String interviewId, SubmitFeedbackRequest request);
     List<FeedbackResponse> getFeedbackForInterview(String interviewId);
+    List<FeedbackResponse> getAllFeedback();
     void selectApplication(String applicationId, SelectApplicationRequest request);
 }
